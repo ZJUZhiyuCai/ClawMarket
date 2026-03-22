@@ -1,0 +1,82 @@
+name: Diagnose (Self-Hosted Runner)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    name: Diagnose remote service reachability
+    runs-on: [self-hosted, linux, x64, clawmarket]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Write deployment env files
+        shell: bash
+        env:
+          ROOT_ENV_FILE: ${{ secrets.ROOT_ENV_FILE }}
+          BACKEND_ENV_FILE: ${{ secrets.BACKEND_ENV_FILE }}
+          FRONTEND_ENV_FILE: ${{ secrets.FRONTEND_ENV_FILE }}
+        run: |
+          set -euo pipefail
+          printf '%s\n' "$ROOT_ENV_FILE" > .env
+          if [ -n "${BACKEND_ENV_FILE:-}" ]; then
+            printf '%s\n' "$BACKEND_ENV_FILE" > backend/.env
+          fi
+          if [ -n "${FRONTEND_ENV_FILE:-}" ]; then
+            printf '%s\n' "$FRONTEND_ENV_FILE" > frontend/.env
+          fi
+
+      - name: Container status
+        shell: bash
+        run: |
+          docker compose -f compose.yml --env-file .env ps
+
+      - name: Local health checks
+        shell: bash
+        run: |
+          backend_port="$(grep -E '^BACKEND_PORT=' .env | tail -n 1 | cut -d= -f2 || true)"
+          frontend_port="$(grep -E '^FRONTEND_PORT=' .env | tail -n 1 | cut -d= -f2 || true)"
+          backend_port="${backend_port:-8000}"
+          frontend_port="${frontend_port:-3000}"
+
+          echo "Backend local health:"
+          curl -sv "http://127.0.0.1:${backend_port}/healthz" || true
+          echo
+          echo "Frontend local root:"
+          curl -sv "http://127.0.0.1:${frontend_port}" || true
+
+      - name: Listening ports
+        shell: bash
+        run: |
+          ss -ltn || true
+
+      - name: Host networking summary
+        shell: bash
+        run: |
+          echo "Hostname:"
+          hostname || true
+          echo
+          echo "Host IPs:"
+          hostname -I || true
+          echo
+          echo "Route table:"
+          ip route || true
+
+      - name: Firewall summary
+        shell: bash
+        run: |
+          echo "ufw status:"
+          sudo -n ufw status || ufw status || true
+          echo
+          echo "nftables:"
+          sudo -n nft list ruleset || nft list ruleset || true
+
+      - name: Recent service logs
+        shell: bash
+        run: |
+          docker compose -f compose.yml --env-file .env logs --no-color --tail=120 backend frontend db redis webhook-worker || true
