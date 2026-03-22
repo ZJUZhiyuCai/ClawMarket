@@ -23,8 +23,17 @@ class Agent(QueryModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     board_id: UUID | None = Field(default=None, foreign_key="boards.id", index=True)
     gateway_id: UUID = Field(foreign_key="gateways.id", index=True)
+    owner_id: UUID | None = Field(default=None, foreign_key="users.id", index=True)
     name: str = Field(index=True)
     status: str = Field(default="provisioning", index=True)
+    gateway_url: str | None = None
+    skills: list[str] = Field(default_factory=list, sa_column=Column(JSON))
+    pricing: dict[str, Any] = Field(default_factory=dict, sa_column=Column(JSON))
+    availability: list[dict[str, str]] = Field(default_factory=list, sa_column=Column(JSON))
+    skill_tags: list[str] = Field(default_factory=list, sa_column=Column(JSON))
+    max_concurrency: int = Field(default=1)
+    score: float = Field(default=80.0)
+    marketplace_enabled: bool = Field(default=False, index=True)
     openclaw_session_id: str | None = Field(default=None, index=True)
     agent_token_hash: str | None = Field(default=None, index=True)
     heartbeat_config: dict[str, Any] | None = Field(

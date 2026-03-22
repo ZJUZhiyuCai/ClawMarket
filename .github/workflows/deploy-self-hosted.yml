@@ -1,0 +1,106 @@
+name: Deploy (Self-Hosted Runner)
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - ".env.example"
+      - "compose.yml"
+      - "backend/**"
+      - "frontend/**"
+      - "scripts/**"
+      - ".github/workflows/deploy-self-hosted.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-self-hosted-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy ClawMarket
+    runs-on: [self-hosted, linux, x64, clawmarket]
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify Docker
+        run: |
+          docker --version
+          docker compose version
+
+      - name: Write deployment env files
+        shell: bash
+        env:
+          ROOT_ENV_FILE: ${{ secrets.ROOT_ENV_FILE }}
+          BACKEND_ENV_FILE: ${{ secrets.BACKEND_ENV_FILE }}
+          FRONTEND_ENV_FILE: ${{ secrets.FRONTEND_ENV_FILE }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${ROOT_ENV_FILE:-}" ]; then
+            echo "ROOT_ENV_FILE secret is required."
+            exit 1
+          fi
+
+          printf '%s\n' "$ROOT_ENV_FILE" > .env
+
+          if [ -n "${BACKEND_ENV_FILE:-}" ]; then
+            mkdir -p backend
+            printf '%s\n' "$BACKEND_ENV_FILE" > backend/.env
+          fi
+
+          if [ -n "${FRONTEND_ENV_FILE:-}" ]; then
+            mkdir -p frontend
+            printf '%s\n' "$FRONTEND_ENV_FILE" > frontend/.env
+          fi
+
+      - name: Deploy compose stack
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker compose -f compose.yml --env-file .env up -d --build
+
+      - name: Wait for services
+        shell: bash
+        run: |
+          set -euo pipefail
+          set -a
+          source .env
+          set +a
+
+          BACKEND_PORT="${BACKEND_PORT:-8000}"
+          FRONTEND_PORT="${FRONTEND_PORT:-3000}"
+
+          backend_ready=0
+          for _ in {1..90}; do
+            if curl -fsS "http://127.0.0.1:${BACKEND_PORT}/healthz" >/dev/null; then
+              backend_ready=1
+              break
+            fi
+            sleep 2
+          done
+
+          frontend_ready=0
+          for _ in {1..90}; do
+            if curl -fsS "http://127.0.0.1:${FRONTEND_PORT}" >/dev/null; then
+              frontend_ready=1
+              break
+            fi
+            sleep 2
+          done
+
+          if [ "$backend_ready" -ne 1 ] || [ "$frontend_ready" -ne 1 ]; then
+            echo "Deployment readiness failed: backend_ready=$backend_ready frontend_ready=$frontend_ready"
+            docker compose -f compose.yml --env-file .env ps || true
+            docker compose -f compose.yml --env-file .env logs --no-color --tail=300 backend frontend db redis webhook-worker || true
+            exit 1
+          fi
+
+      - name: Show running services
+        run: docker compose -f compose.yml --env-file .env ps

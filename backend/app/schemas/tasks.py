@@ -85,6 +85,18 @@ class TaskRead(TaskBase):
     is_blocked: bool = False
     tags: list[TagRef] = Field(default_factory=list)
     custom_field_values: TaskCustomFieldValues | None = None
+    marketplace_state: str | None = None
+    marketplace_task_type: str | None = None
+    marketplace_budget_amount: int | None = None
+    marketplace_budget_currency: str | None = None
+    marketplace_public: bool = False
+    marketplace_listing_agent_id: UUID | None = None
+    marketplace_attachments: list[dict[str, object]] = Field(default_factory=list)
+    marketplace_match_candidates: list[dict[str, object]] = Field(default_factory=list)
+    marketplace_delivery_artifacts: list[dict[str, object]] = Field(default_factory=list)
+    marketplace_screenshots: list[dict[str, object]] = Field(default_factory=list)
+    marketplace_delivery_note: str | None = None
+    marketplace_failure_reason: str | None = None
 
 
 class TaskCommentCreate(SQLModel):

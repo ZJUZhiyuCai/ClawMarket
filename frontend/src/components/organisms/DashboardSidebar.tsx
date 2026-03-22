@@ -12,6 +12,7 @@ import {
   Building2,
   LayoutGrid,
   Network,
+  Shield,
   Settings,
   Store,
   Tags,
@@ -93,6 +94,76 @@ export function DashboardSidebar() {
                 <Activity className="h-4 w-4" />
                 Live feed
               </Link>
+            </div>
+          </div>
+
+          <div>
+            <p className="px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+              ClawMarket
+            </p>
+            <div className="mt-1 space-y-1">
+              <Link
+                href="/marketplace"
+                className={cn(
+                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-700 transition",
+                  pathname.startsWith("/marketplace")
+                    ? "bg-blue-100 text-blue-800 font-medium"
+                    : "hover:bg-slate-100",
+                )}
+              >
+                <Store className="h-4 w-4" />
+                Marketplace
+              </Link>
+              <Link
+                href="/tasks/new"
+                className={cn(
+                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-700 transition",
+                  pathname.startsWith("/tasks/new")
+                    ? "bg-blue-100 text-blue-800 font-medium"
+                    : "hover:bg-slate-100",
+                )}
+              >
+                <LayoutGrid className="h-4 w-4" />
+                Publish task
+              </Link>
+              <Link
+                href="/requester"
+                className={cn(
+                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-700 transition",
+                  pathname.startsWith("/requester")
+                    ? "bg-blue-100 text-blue-800 font-medium"
+                    : "hover:bg-slate-100",
+                )}
+              >
+                <BarChart3 className="h-4 w-4" />
+                Requester
+              </Link>
+              <Link
+                href="/supplier"
+                className={cn(
+                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-700 transition",
+                  pathname.startsWith("/supplier") || pathname.startsWith("/agents/register")
+                    ? "bg-blue-100 text-blue-800 font-medium"
+                    : "hover:bg-slate-100",
+                )}
+              >
+                <Bot className="h-4 w-4" />
+                Supplier
+              </Link>
+              {isAdmin ? (
+                <Link
+                  href="/admin/arbitration"
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-700 transition",
+                    pathname.startsWith("/admin/arbitration")
+                      ? "bg-blue-100 text-blue-800 font-medium"
+                      : "hover:bg-slate-100",
+                  )}
+                >
+                  <Shield className="h-4 w-4" />
+                  Arbitration
+                </Link>
+              ) : null}
             </div>
           </div>
 

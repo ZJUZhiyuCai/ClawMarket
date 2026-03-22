@@ -81,6 +81,45 @@ class AgentBase(SQLModel):
         description="Current lifecycle state used by coordinator logic.",
         examples=["provisioning", "active", "paused", "retired"],
     )
+    gateway_url: str | None = Field(
+        default=None,
+        description="Supplier-facing gateway URL snapshot.",
+        examples=["wss://gateway.example.com/ws"],
+    )
+    skills: list[str] = Field(
+        default_factory=list,
+        description="Imported skills exposed by the supplier runtime.",
+        examples=[["crawl-web", "excel-cleanup", "report-writer"]],
+    )
+    pricing: dict[str, Any] = Field(
+        default_factory=dict,
+        description="Marketplace pricing configuration.",
+        examples=[{"mode": "fixed", "amount": 12000, "currency": "cny"}],
+    )
+    availability: list[dict[str, str]] = Field(
+        default_factory=list,
+        description="Availability windows declared by the supplier.",
+        examples=[[{"day": "mon", "start": "09:00", "end": "18:00"}]],
+    )
+    skill_tags: list[str] = Field(
+        default_factory=list,
+        description="Supplier managed skill tags for matching.",
+        examples=[["crawl", "excel", "report"]],
+    )
+    max_concurrency: int = Field(
+        default=1,
+        description="Maximum concurrent marketplace orders allowed for this listing.",
+        examples=[2],
+    )
+    score: float = Field(
+        default=80.0,
+        description="Historical marketplace score used by matching.",
+        examples=[91.5],
+    )
+    marketplace_enabled: bool = Field(
+        default=False,
+        description="Whether this agent is visible in the marketplace.",
+    )
     heartbeat_config: dict[str, Any] | None = Field(
         default=None,
         description="Runtime heartbeat behavior overrides for this agent.",
@@ -170,6 +209,14 @@ class AgentUpdate(SQLModel):
         description="Optional replacement lifecycle status.",
         examples=["active", "paused"],
     )
+    gateway_url: str | None = None
+    skills: list[str] | None = None
+    pricing: dict[str, Any] | None = None
+    availability: list[dict[str, str]] | None = None
+    skill_tags: list[str] | None = None
+    max_concurrency: int | None = None
+    score: float | None = None
+    marketplace_enabled: bool | None = None
     heartbeat_config: dict[str, Any] | None = Field(
         default=None,
         description="Optional heartbeat policy override.",
@@ -228,6 +275,10 @@ class AgentRead(AgentBase):
 
     id: UUID = Field(description="Agent UUID.")
     gateway_id: UUID = Field(description="Gateway UUID that manages this agent.")
+    owner_id: UUID | None = Field(
+        default=None,
+        description="Marketplace supplier owner for this agent listing.",
+    )
     is_board_lead: bool = Field(
         default=False,
         description="Whether this agent is the board lead.",

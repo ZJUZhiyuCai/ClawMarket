@@ -84,6 +84,19 @@ class Settings(BaseSettings):
     # OpenClaw gateway runtime compatibility
     gateway_min_version: str = "2026.02.9"
 
+    # ClawMarket marketplace runtime
+    clawmarket_org_name: str = "ClawMarket Marketplace"
+    clawmarket_upload_dir: str = str(BACKEND_ROOT / "storage" / "clawmarket")
+    clawmarket_max_attachment_bytes: int = 5_242_880
+    clawmarket_platform_fee_bps: int = 2000
+
+    # Payments
+    payment_provider: str = "mock"
+    payment_currency: str = "cny"
+    stripe_api_base: str = "https://api.stripe.com/v1"
+    stripe_secret_key: str = ""
+    stripe_test_payment_method: str = ""
+
     # Logging
     log_level: str = "INFO"
     log_format: str = "text"

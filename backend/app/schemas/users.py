@@ -42,6 +42,21 @@ class UserBase(SQLModel):
         description="IANA timezone identifier.",
         examples=["America/Los_Angeles"],
     )
+    account_role: str = Field(
+        default="requester",
+        description="Marketplace role for the user account.",
+        examples=["requester", "supplier"],
+    )
+    company_name: str | None = Field(
+        default=None,
+        description="Optional company or studio name.",
+        examples=["ClawMarket Studio"],
+    )
+    wechat_handle: str | None = Field(
+        default=None,
+        description="Optional WeChat contact handle.",
+        examples=["clawmarket_ops"],
+    )
     notes: str | None = Field(
         default=None,
         description="Internal notes for operators.",
@@ -65,6 +80,9 @@ class UserUpdate(SQLModel):
     preferred_name: str | None = None
     pronouns: str | None = None
     timezone: str | None = None
+    account_role: str | None = None
+    company_name: str | None = None
+    wechat_handle: str | None = None
     notes: str | None = None
     context: str | None = None
 

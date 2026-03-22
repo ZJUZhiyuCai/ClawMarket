@@ -24,7 +24,9 @@ from app.api.boards import router as boards_router
 from app.api.gateway import router as gateway_router
 from app.api.gateways import router as gateways_router
 from app.api.metrics import router as metrics_router
+from app.api.marketplace import router as marketplace_router
 from app.api.organizations import router as organizations_router
+from app.api.payments import router as payments_router
 from app.api.skills_marketplace import router as skills_marketplace_router
 from app.api.souls_directory import router as souls_directory_router
 from app.api.tags import router as tags_router
@@ -75,8 +77,16 @@ OPENAPI_TAGS = [
         "description": "Aggregated operational and board analytics metrics endpoints.",
     },
     {
+        "name": "marketplace",
+        "description": "ClawMarket supplier onboarding, task market, and arbitration flows.",
+    },
+    {
         "name": "organizations",
         "description": "Organization profile, membership, and governance management endpoints.",
+    },
+    {
+        "name": "payments",
+        "description": "Escrow payment authorization, release, and refund operations.",
     },
     {
         "name": "souls-directory",
@@ -166,7 +176,9 @@ _OPENAPI_EXAMPLE_TAGS = {
     "activity",
     "gateways",
     "metrics",
+    "marketplace",
     "organizations",
+    "payments",
     "souls-directory",
     "skills",
     "board-groups",
@@ -538,12 +550,14 @@ def readyz() -> HealthStatusResponse:
 
 api_v1 = APIRouter(prefix="/api/v1")
 api_v1.include_router(auth_router)
+api_v1.include_router(marketplace_router)
 api_v1.include_router(agent_router)
 api_v1.include_router(agents_router)
 api_v1.include_router(activity_router)
 api_v1.include_router(gateway_router)
 api_v1.include_router(gateways_router)
 api_v1.include_router(metrics_router)
+api_v1.include_router(payments_router)
 api_v1.include_router(organizations_router)
 api_v1.include_router(souls_directory_router)
 api_v1.include_router(skills_marketplace_router)

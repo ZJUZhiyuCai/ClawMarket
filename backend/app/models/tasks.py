@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID, uuid4
 
+from sqlalchemy import JSON, Column, Text
 from sqlmodel import Field
 
 from app.core.time import utcnow
@@ -41,6 +42,34 @@ class Task(TenantScoped, table=True):
     )
     auto_created: bool = Field(default=False)
     auto_reason: str | None = None
+    marketplace_state: str | None = Field(default=None, index=True)
+    marketplace_task_type: str | None = Field(default=None, index=True)
+    marketplace_budget_amount: int | None = None
+    marketplace_budget_currency: str | None = None
+    marketplace_public: bool = Field(default=False, index=True)
+    marketplace_listing_agent_id: UUID | None = Field(
+        default=None,
+        foreign_key="agents.id",
+        index=True,
+    )
+    marketplace_attachments: list[dict[str, object]] = Field(
+        default_factory=list,
+        sa_column=Column(JSON),
+    )
+    marketplace_match_candidates: list[dict[str, object]] = Field(
+        default_factory=list,
+        sa_column=Column(JSON),
+    )
+    marketplace_delivery_artifacts: list[dict[str, object]] = Field(
+        default_factory=list,
+        sa_column=Column(JSON),
+    )
+    marketplace_screenshots: list[dict[str, object]] = Field(
+        default_factory=list,
+        sa_column=Column(JSON),
+    )
+    marketplace_delivery_note: str | None = Field(default=None, sa_column=Column(Text))
+    marketplace_failure_reason: str | None = Field(default=None, sa_column=Column(Text))
 
     created_at: datetime = Field(default_factory=utcnow)
     updated_at: datetime = Field(default_factory=utcnow)

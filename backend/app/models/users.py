@@ -21,6 +21,9 @@ class User(QueryModel, table=True):
     preferred_name: str | None = None
     pronouns: str | None = None
     timezone: str | None = None
+    account_role: str = Field(default="requester", index=True)
+    company_name: str | None = None
+    wechat_handle: str | None = None
     notes: str | None = None
     context: str | None = None
     is_super_admin: bool = Field(default=False)
