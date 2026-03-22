@@ -70,12 +70,20 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          set -a
-          source .env
-          set +a
+          env_value() {
+            local key="$1"
+            local fallback="$2"
+            local line
+            line="$(grep -E "^${key}=" .env | tail -n 1 || true)"
+            if [ -z "$line" ]; then
+              printf '%s\n' "$fallback"
+              return
+            fi
+            printf '%s\n' "${line#*=}"
+          }
 
-          BACKEND_PORT="${BACKEND_PORT:-8000}"
-          FRONTEND_PORT="${FRONTEND_PORT:-3000}"
+          BACKEND_PORT="$(env_value BACKEND_PORT 8000)"
+          FRONTEND_PORT="$(env_value FRONTEND_PORT 3000)"
 
           backend_ready=0
           for _ in {1..90}; do
